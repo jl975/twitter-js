@@ -1,27 +1,50 @@
 var tweetBank = require('../tweetBank');
+var orm = require('../models');
 
 module.exports = function (io) {
 	var router = require('express').Router();
 
+	var tweetList = orm.Tweet.findAll({include: [orm.User]}).then(function(results) {
+			return results.map(function(result) {
+				console.log(result.dataValues);
+				return {name: result.dataValues.User.name, 
+					text: result.dataValues.tweet, 
+					pictureUrl: result.dataValues.User.dataValues.pictureUrl,
+					id: result.dataValues.id,
+					userId: result.dataValues.userId,
+				}
+			});
+		});
+
 	router.get('/', function (req, res) {
 		// will trigger res.send of the index.html file
 		// after rendering with swig.renderFile
-		res.render('index', {
-			showForm: true,
-			title: 'Home',
-			tweets: tweetBank.list()
+		console.log(tweetList);
+
+		tweetList.then(function(tweets){
+			res.render('index', {
+				showForm: true,
+				title: 'Home',
+				tweets: tweets
+			});
 		});
+
 	});
 
 	router.get('/users/:name', function (req, res) {
-		var userTweets = tweetBank.find({
-			name: req.params.name
-		});
-		res.render('index', {
-			showForm: true,
-			title: req.params.name,
-			tweets: userTweets,
-			theName: req.params.name
+		tweetList.then(function(tweets) {
+			// var userTweets = tweets.find({
+			// 	name: req.params.name
+			// });
+			var userTweets = tweets.filter(function(tweet){
+				return tweet.name == req.params.name;
+			});
+			res.render('index', {
+				showForm: true,
+				title: req.params.name,
+				tweets: userTweets,
+				theName: req.params.name
+			});
 		});
 	});
 

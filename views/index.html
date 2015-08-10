@@ -28,7 +28,7 @@
       <!-- display tweets here -->
       {% for tweet in tweets %}
         <div id="tweetbox">
-          <img src="http://lorempixel.com/48/48" />
+          <img src="{{tweet.pictureUrl}}" style="width:50px; height:50px" />
           <span class="content">
             <a href="/users/{{tweet.name}}" class="by">{{tweet.name}}</a>
             <a href="/users/{{tweet.name}}/tweets/{{tweet.id}}">{{tweet.text}}</a>
